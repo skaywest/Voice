@@ -46,7 +46,6 @@ VoiceCallOfDutyAudioProcessorEditor::VoiceCallOfDutyAudioProcessorEditor (VoiceC
     {
         button->setColour (juce::TextButton::buttonColourId, panel);
         button->setColour (juce::TextButton::textColourOffId, orange);
-        button->setColour (juce::TextButton::outlineColourId, juce::Colour (0xff343b38));
         addAndMakeVisible (*button);
     }
     saveUserPresetButton.onClick = [this]
