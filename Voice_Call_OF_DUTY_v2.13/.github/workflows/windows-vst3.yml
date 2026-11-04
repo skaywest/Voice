@@ -1,0 +1,64 @@
+name: Build Windows x64 VST3
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'Source/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/windows-vst3.yml'
+      - 'tools/verify_source.py'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Verify source structure
+        shell: pwsh
+        run: python tools/verify_source.py
+
+      - name: Configure JUCE VST3 project
+        shell: pwsh
+        run: >-
+          cmake -S . -B build -A x64
+          -DCMAKE_BUILD_TYPE=Release
+          -DJUCE_BUILD_EXAMPLES=OFF
+          -DJUCE_BUILD_EXTRAS=OFF
+
+      - name: Compile VST3
+        shell: pwsh
+        run: cmake --build build --config Release --target Voice_Call_OF_DUTY_VST3 --parallel 2
+
+      - name: Verify VST3 bundle exists
+        shell: pwsh
+        run: |
+          $bundle = "build/Voice_Call_OF_DUTY_artefacts/Release/VST3/Voice Call Of Duty.vst3"
+          if (-not (Test-Path $bundle -PathType Container)) {
+            throw "VST3 bundle was not produced at: $bundle"
+          }
+          Get-ChildItem $bundle -Recurse | Select-Object FullName, Length
+
+      - name: Upload VST3 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Voice-Call-Of-Duty-Windows-x64-VST3
+          path: build/Voice_Call_OF_DUTY_artefacts/Release/VST3/Voice Call Of Duty.vst3/
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 14
