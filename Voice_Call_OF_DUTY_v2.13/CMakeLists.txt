@@ -34,6 +34,9 @@ juce_add_plugin(Voice_Call_OF_DUTY
     COPY_PLUGIN_AFTER_BUILD FALSE
 )
 
+# Generate JuceHeader.h used by the project source files.
+juce_generate_juce_header(Voice_Call_OF_DUTY)
+
 target_sources(Voice_Call_OF_DUTY PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginProcessor.h
